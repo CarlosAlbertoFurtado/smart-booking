@@ -1,0 +1,199 @@
+// ===========================================
+// SmartBooking — Prisma Schema
+// Database: PostgreSQL
+// ===========================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---- Enums ----
+
+enum Role {
+  ADMIN
+  PROFESSIONAL
+  CLIENT
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+// ---- Models ----
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String?
+  name          String
+  phone         String?
+  avatarUrl     String?   @map("avatar_url")
+  role          Role      @default(CLIENT)
+  googleId      String?   @unique @map("google_id")
+  isActive      Boolean   @default(true) @map("is_active")
+  refreshToken  String?   @map("refresh_token")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  ownedBusinesses  Business[]    @relation("BusinessOwner")
+  professional     Professional?
+  bookingsAsClient Booking[]     @relation("ClientBookings")
+  notifications    Notification[]
+
+  @@map("users")
+}
+
+model Business {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  description String?
+  phone       String?
+  email       String?
+  address     String?
+  city        String?
+  state       String?
+  logoUrl     String?  @map("logo_url")
+  isActive    Boolean  @default(true) @map("is_active")
+  ownerId     String   @map("owner_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  owner         User            @relation("BusinessOwner", fields: [ownerId], references: [id])
+  professionals Professional[]
+  services      Service[]
+  workingHours  WorkingHours[]
+  bookings      Booking[]
+
+  @@map("businesses")
+}
+
+model Professional {
+  id         String  @id @default(uuid())
+  userId     String  @unique @map("user_id")
+  businessId String  @map("business_id")
+  specialty  String?
+  bio        String?
+  isActive   Boolean @default(true) @map("is_active")
+
+  // Relations
+  user              User              @relation(fields: [userId], references: [id])
+  business          Business          @relation(fields: [businessId], references: [id])
+  bookings          Booking[]
+  professionalServices ProfessionalService[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("professionals")
+}
+
+model Service {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+  duration    Int     // in minutes
+  price       Float
+  isActive    Boolean @default(true) @map("is_active")
+  businessId  String  @map("business_id")
+
+  // Relations
+  business             Business              @relation(fields: [businessId], references: [id])
+  bookings             Booking[]
+  professionalServices ProfessionalService[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("services")
+}
+
+model ProfessionalService {
+  id             String @id @default(uuid())
+  professionalId String @map("professional_id")
+  serviceId      String @map("service_id")
+
+  professional Professional @relation(fields: [professionalId], references: [id])
+  service      Service      @relation(fields: [serviceId], references: [id])
+
+  @@unique([professionalId, serviceId])
+  @@map("professional_services")
+}
+
+model WorkingHours {
+  id         String    @id @default(uuid())
+  businessId String    @map("business_id")
+  dayOfWeek  DayOfWeek @map("day_of_week")
+  startTime  String    @map("start_time") // "09:00"
+  endTime    String    @map("end_time")   // "18:00"
+  isOpen     Boolean   @default(true) @map("is_open")
+
+  business Business @relation(fields: [businessId], references: [id])
+
+  @@unique([businessId, dayOfWeek])
+  @@map("working_hours")
+}
+
+model Booking {
+  id             String        @id @default(uuid())
+  clientId       String        @map("client_id")
+  professionalId String        @map("professional_id")
+  serviceId      String        @map("service_id")
+  businessId     String        @map("business_id")
+  date           DateTime
+  startTime      String        @map("start_time")
+  endTime        String        @map("end_time")
+  status         BookingStatus @default(PENDING)
+  notes          String?
+  cancelReason   String?       @map("cancel_reason")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  client       User         @relation("ClientBookings", fields: [clientId], references: [id])
+  professional Professional @relation(fields: [professionalId], references: [id])
+  service      Service      @relation(fields: [serviceId], references: [id])
+  business     Business     @relation(fields: [businessId], references: [id])
+
+  @@index([businessId, date])
+  @@index([professionalId, date])
+  @@index([clientId])
+  @@map("bookings")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  title     String
+  message   String
+  isRead    Boolean  @default(false) @map("is_read")
+  type      String   // booking_confirmed, booking_cancelled, reminder
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
