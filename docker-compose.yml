@@ -1,0 +1,65 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: smartbooking-api
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://smartbooking:smartbooking123@postgres:5432/smartbooking?schema=public
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - smartbooking-network
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: smartbooking-db
+    environment:
+      POSTGRES_USER: smartbooking
+      POSTGRES_PASSWORD: smartbooking123
+      POSTGRES_DB: smartbooking
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U smartbooking" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - smartbooking-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: smartbooking-cache
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - smartbooking-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+
+networks:
+  smartbooking-network:
+    driver: bridge
