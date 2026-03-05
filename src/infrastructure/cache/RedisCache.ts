@@ -1,7 +1,3 @@
-// ===========================================
-// Infrastructure: Redis Cache Service
-// ===========================================
-
 import Redis from 'ioredis';
 import { ICacheService } from '../../domain/interfaces/repositories';
 import { logger } from '../../shared/utils/logger';
@@ -13,18 +9,12 @@ export class RedisCacheService implements ICacheService {
         this.client = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
             maxRetriesPerRequest: 3,
             retryStrategy(times) {
-                const delay = Math.min(times * 50, 2000);
-                return delay;
+                return Math.min(times * 50, 2000);
             },
         });
 
-        this.client.on('connect', () => {
-            logger.info('✅ Redis connected successfully');
-        });
-
-        this.client.on('error', (err) => {
-            logger.error(err, '❌ Redis connection error');
-        });
+        this.client.on('connect', () => logger.info('redis_connected'));
+        this.client.on('error', (err) => logger.error(err, 'redis_error'));
     }
 
     async get<T>(key: string): Promise<T | null> {
@@ -38,8 +28,7 @@ export class RedisCacheService implements ICacheService {
     }
 
     async set(key: string, value: unknown, ttlSeconds: number = 3600): Promise<void> {
-        const serialized = JSON.stringify(value);
-        await this.client.set(key, serialized, 'EX', ttlSeconds);
+        await this.client.set(key, JSON.stringify(value), 'EX', ttlSeconds);
     }
 
     async delete(key: string): Promise<void> {

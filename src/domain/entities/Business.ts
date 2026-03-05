@@ -1,7 +1,3 @@
-// ===========================================
-// Domain Entity: Business
-// ===========================================
-
 export interface BusinessProps {
     id?: string;
     name: string;

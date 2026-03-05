@@ -1,7 +1,3 @@
-// ===========================================
-// Middleware: Authentication (JWT)
-// ===========================================
-
 import { Request, Response, NextFunction } from 'express';
 import { verifyAccessToken } from '../../shared/utils/jwt';
 import { UnauthorizedError, ForbiddenError } from '../../shared/errors/AppError';
@@ -12,9 +8,6 @@ export interface AuthenticatedRequest extends Request {
     userRole?: UserRole;
 }
 
-/**
- * Middleware: Verify JWT token
- */
 export function authenticate(req: AuthenticatedRequest, _res: Response, next: NextFunction): void {
     const authHeader = req.headers.authorization;
 
@@ -22,10 +15,8 @@ export function authenticate(req: AuthenticatedRequest, _res: Response, next: Ne
         throw new UnauthorizedError('Access token is required');
     }
 
-    const token = authHeader.split(' ')[1];
-
     try {
-        const payload = verifyAccessToken(token);
+        const payload = verifyAccessToken(authHeader.split(' ')[1]);
         req.userId = payload.userId;
         req.userRole = payload.role;
         next();
@@ -34,9 +25,6 @@ export function authenticate(req: AuthenticatedRequest, _res: Response, next: Ne
     }
 }
 
-/**
- * Middleware Factory: Authorize by role
- */
 export function authorize(...allowedRoles: UserRole[]) {
     return (req: AuthenticatedRequest, _res: Response, next: NextFunction): void => {
         if (!req.userRole || !allowedRoles.includes(req.userRole)) {

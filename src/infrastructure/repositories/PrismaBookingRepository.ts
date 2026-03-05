@@ -1,7 +1,3 @@
-// ===========================================
-// Infrastructure: Booking Repository (Prisma)
-// ===========================================
-
 import prisma from '../database/prisma';
 import { Booking, BookingStatus } from '../../domain/entities/Booking';
 import { IBookingRepository, PaginationParams, PaginatedResult, BookingFilters } from '../../domain/interfaces/repositories';

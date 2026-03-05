@@ -1,8 +1,3 @@
-// ===========================================
-// Domain Entity: User
-// Pure business logic — no dependencies on frameworks
-// ===========================================
-
 export enum UserRole {
     ADMIN = 'ADMIN',
     PROFESSIONAL = 'PROFESSIONAL',
@@ -12,13 +7,14 @@ export enum UserRole {
 export interface UserProps {
     id?: string;
     email: string;
-    password?: string | null;
+    password?: string;
     name: string;
-    phone?: string | null;
-    avatarUrl?: string | null;
+    phone?: string;
+    avatarUrl?: string;
     role: UserRole;
-    googleId?: string | null;
+    googleId?: string;
     isActive: boolean;
+    refreshToken?: string | null;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -26,13 +22,14 @@ export interface UserProps {
 export class User {
     readonly id?: string;
     readonly email: string;
-    readonly password?: string | null;
+    readonly password?: string;
     readonly name: string;
-    readonly phone?: string | null;
-    readonly avatarUrl?: string | null;
+    readonly phone?: string;
+    readonly avatarUrl?: string;
     readonly role: UserRole;
-    readonly googleId?: string | null;
+    readonly googleId?: string;
     readonly isActive: boolean;
+    readonly refreshToken?: string | null;
     readonly createdAt?: Date;
     readonly updatedAt?: Date;
 
@@ -46,8 +43,8 @@ export class User {
     }
 
     private validate(props: UserProps): void {
-        if (!props.email || !props.email.includes('@')) {
-            throw new Error('Invalid email address');
+        if (!props.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(props.email)) {
+            throw new Error('Invalid email');
         }
         if (!props.name || props.name.trim().length < 2) {
             throw new Error('Name must be at least 2 characters');
@@ -70,6 +67,6 @@ export class User {
     }
 
     canManageBusiness(): boolean {
-        return this.role === UserRole.ADMIN;
+        return this.role === UserRole.ADMIN || this.role === UserRole.PROFESSIONAL;
     }
 }

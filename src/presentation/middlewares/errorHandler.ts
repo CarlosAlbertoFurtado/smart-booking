@@ -1,7 +1,3 @@
-// ===========================================
-// Middleware: Global Error Handler
-// ===========================================
-
 import { Request, Response, NextFunction } from 'express';
 import { AppError, ValidationError } from '../../shared/errors/AppError';
 import { ZodError } from 'zod';
@@ -13,14 +9,12 @@ export function errorHandler(
     res: Response,
     _next: NextFunction,
 ): void {
-    // Log the error
     logger.error({
         name: err.name,
         message: err.message,
         stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
     });
 
-    // Zod validation errors
     if (err instanceof ZodError) {
         const errors: Record<string, string[]> = {};
         err.errors.forEach((e) => {
@@ -29,34 +23,20 @@ export function errorHandler(
             errors[path].push(e.message);
         });
 
-        res.status(422).json({
-            status: 'error',
-            message: 'Validation failed',
-            errors,
-        });
+        res.status(422).json({ status: 'error', message: 'Validation failed', errors });
         return;
     }
 
-    // Custom validation errors
     if (err instanceof ValidationError) {
-        res.status(err.statusCode).json({
-            status: 'error',
-            message: err.message,
-            errors: err.errors,
-        });
+        res.status(err.statusCode).json({ status: 'error', message: err.message, errors: err.errors });
         return;
     }
 
-    // Custom application errors
     if (err instanceof AppError) {
-        res.status(err.statusCode).json({
-            status: 'error',
-            message: err.message,
-        });
+        res.status(err.statusCode).json({ status: 'error', message: err.message });
         return;
     }
 
-    // Unknown errors
     res.status(500).json({
         status: 'error',
         message: 'Internal server error',

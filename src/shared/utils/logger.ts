@@ -1,8 +1,3 @@
-// ===========================================
-// Pino Logger Configuration
-// Structured logging for production
-// ===========================================
-
 import pino from 'pino';
 
 export const logger = pino({

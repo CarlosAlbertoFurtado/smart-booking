@@ -1,12 +1,8 @@
-// ===========================================
-// Domain Entity: Service
-// ===========================================
-
 export interface ServiceProps {
     id?: string;
     name: string;
     description?: string | null;
-    duration: number; // in minutes
+    duration: number; // minutes
     price: number;
     isActive: boolean;
     businessId: string;

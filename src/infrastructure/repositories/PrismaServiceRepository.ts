@@ -1,7 +1,3 @@
-// ===========================================
-// Infrastructure: Service Repository (Prisma)
-// ===========================================
-
 import prisma from '../database/prisma';
 import { Service } from '../../domain/entities/Service';
 import { IServiceRepository } from '../../domain/interfaces/repositories';

@@ -1,7 +1,3 @@
-// ===========================================
-// Controller: Auth
-// ===========================================
-
 import { Request, Response } from 'express';
 import { RegisterUserUseCase } from '../../application/use-cases/RegisterUserUseCase';
 import { LoginUserUseCase } from '../../application/use-cases/LoginUserUseCase';
@@ -11,13 +7,6 @@ import { registerSchema, loginSchema } from '../../shared/validators/schemas';
 const userRepository = new PrismaUserRepository();
 
 export class AuthController {
-    /**
-     * @swagger
-     * /api/auth/register:
-     *   post:
-     *     summary: Register a new user
-     *     tags: [Auth]
-     */
     static async register(req: Request, res: Response): Promise<void> {
         const dto = registerSchema.parse(req.body);
         const useCase = new RegisterUserUseCase(userRepository);
@@ -30,13 +19,6 @@ export class AuthController {
         });
     }
 
-    /**
-     * @swagger
-     * /api/auth/login:
-     *   post:
-     *     summary: Login with email and password
-     *     tags: [Auth]
-     */
     static async login(req: Request, res: Response): Promise<void> {
         const dto = loginSchema.parse(req.body);
         const useCase = new LoginUserUseCase(userRepository);
@@ -49,13 +31,6 @@ export class AuthController {
         });
     }
 
-    /**
-     * @swagger
-     * /api/auth/me:
-     *   get:
-     *     summary: Get current authenticated user
-     *     tags: [Auth]
-     */
     static async me(req: Request, res: Response): Promise<void> {
         const userId = (req as { userId?: string }).userId;
         const user = await userRepository.findById(userId!);

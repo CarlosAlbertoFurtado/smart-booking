@@ -1,11 +1,8 @@
-// ===========================================
-// Application DTOs (Data Transfer Objects)
-// ===========================================
-
 import { BookingStatus } from '../../domain/entities/Booking';
 import { UserRole } from '../../domain/entities/User';
 
-// ---- Auth DTOs ----
+// --- Auth ---
+
 export interface RegisterDTO {
     email: string;
     password: string;
@@ -30,7 +27,8 @@ export interface AuthResponseDTO {
     refreshToken: string;
 }
 
-// ---- Business DTOs ----
+// --- Business ---
+
 export interface CreateBusinessDTO {
     name: string;
     description?: string;
@@ -52,7 +50,8 @@ export interface UpdateBusinessDTO {
     isActive?: boolean;
 }
 
-// ---- Service DTOs ----
+// --- Service ---
+
 export interface CreateServiceDTO {
     name: string;
     description?: string;
@@ -69,13 +68,14 @@ export interface UpdateServiceDTO {
     isActive?: boolean;
 }
 
-// ---- Booking DTOs ----
+// --- Booking ---
+
 export interface CreateBookingDTO {
     professionalId: string;
     serviceId: string;
     businessId: string;
-    date: string; // ISO date
-    startTime: string; // HH:MM
+    date: string;
+    startTime: string;
     notes?: string;
 }
 
@@ -85,7 +85,8 @@ export interface UpdateBookingDTO {
     cancelReason?: string;
 }
 
-// ---- Query DTOs ----
+// --- Query ---
+
 export interface PaginationQueryDTO {
     page?: number;
     limit?: number;

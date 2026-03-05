@@ -1,7 +1,3 @@
-// ===========================================
-// JWT Token Utilities
-// ===========================================
-
 import jwt from 'jsonwebtoken';
 import { UserRole } from '../../domain/entities/User';
 

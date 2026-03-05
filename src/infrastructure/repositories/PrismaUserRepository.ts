@@ -1,7 +1,3 @@
-// ===========================================
-// Infrastructure: User Repository (Prisma)
-// ===========================================
-
 import prisma from '../database/prisma';
 import { User, UserRole } from '../../domain/entities/User';
 import { IUserRepository, PaginationParams, PaginatedResult } from '../../domain/interfaces/repositories';
@@ -20,38 +16,22 @@ export class PrismaUserRepository implements IUserRepository {
                 isActive: user.isActive,
             },
         });
-
-        return new User({
-            id: created.id,
-            email: created.email,
-            password: created.password,
-            name: created.name,
-            phone: created.phone,
-            avatarUrl: created.avatarUrl,
-            role: created.role as UserRole,
-            googleId: created.googleId,
-            isActive: created.isActive,
-            createdAt: created.createdAt,
-            updatedAt: created.updatedAt,
-        });
+        return this.toDomain(created);
     }
 
     async findById(id: string): Promise<User | null> {
         const user = await prisma.user.findUnique({ where: { id } });
-        if (!user) return null;
-        return this.toDomain(user);
+        return user ? this.toDomain(user) : null;
     }
 
     async findByEmail(email: string): Promise<User | null> {
         const user = await prisma.user.findUnique({ where: { email } });
-        if (!user) return null;
-        return this.toDomain(user);
+        return user ? this.toDomain(user) : null;
     }
 
     async findByGoogleId(googleId: string): Promise<User | null> {
         const user = await prisma.user.findUnique({ where: { googleId } });
-        if (!user) return null;
-        return this.toDomain(user);
+        return user ? this.toDomain(user) : null;
     }
 
     async findAll(params: PaginationParams & { role?: UserRole }): Promise<PaginatedResult<User>> {

@@ -1,7 +1,3 @@
-// ===========================================
-// Controller: Booking
-// ===========================================
-
 import { Request, Response } from 'express';
 import { CreateBookingUseCase } from '../../application/use-cases/CreateBookingUseCase';
 import { PrismaBookingRepository } from '../../infrastructure/repositories/PrismaBookingRepository';
@@ -17,79 +13,40 @@ const serviceRepository = new PrismaServiceRepository();
 const cacheService = new RedisCacheService();
 
 export class BookingController {
-    /**
-     * @swagger
-     * /api/bookings:
-     *   post:
-     *     summary: Create a new booking
-     *     tags: [Bookings]
-     */
     static async create(req: AuthenticatedRequest, res: Response): Promise<void> {
         const dto = createBookingSchema.parse(req.body);
         const useCase = new CreateBookingUseCase(bookingRepository, serviceRepository, cacheService);
         const booking = await useCase.execute(req.userId!, dto);
 
-        res.status(201).json({
-            status: 'success',
-            message: 'Booking created successfully',
-            data: booking,
-        });
+        res.status(201).json({ status: 'success', data: booking });
     }
 
-    /**
-     * @swagger
-     * /api/bookings:
-     *   get:
-     *     summary: List bookings with filters and pagination
-     *     tags: [Bookings]
-     */
     static async list(req: AuthenticatedRequest, res: Response): Promise<void> {
         const { page, limit } = paginationSchema.parse(req.query);
         const { status, dateFrom, dateTo, professionalId, businessId } = req.query;
 
-        const result = await bookingRepository.findAll({
-            page,
-            limit,
-            status: status as BookingStatus | undefined,
-            dateFrom: dateFrom ? new Date(dateFrom as string) : undefined,
-            dateTo: dateTo ? new Date(dateTo as string) : undefined,
-            professionalId: professionalId as string | undefined,
-            businessId: businessId as string | undefined,
-            clientId: req.userRole === 'CLIENT' ? req.userId : undefined,
-        });
+        const result = await bookingRepository.findAll(
+            { page, limit },
+            {
+                status: status as BookingStatus | undefined,
+                dateFrom: dateFrom ? new Date(dateFrom as string) : undefined,
+                dateTo: dateTo ? new Date(dateTo as string) : undefined,
+                professionalId: professionalId as string | undefined,
+                businessId: businessId as string | undefined,
+                clientId: req.userRole === 'CLIENT' ? req.userId : undefined,
+            },
+        );
 
-        res.status(200).json({
-            status: 'success',
-            data: result,
-        });
+        res.status(200).json({ status: 'success', data: result });
     }
 
-    /**
-     * @swagger
-     * /api/bookings/{id}:
-     *   get:
-     *     summary: Get a booking by ID
-     *     tags: [Bookings]
-     */
     static async getById(req: Request, res: Response): Promise<void> {
         const booking = await bookingRepository.findById(req.params.id);
-        if (!booking) {
-            throw new NotFoundError('Booking');
-        }
+        if (!booking) throw new NotFoundError('Booking');
 
-        res.status(200).json({
-            status: 'success',
-            data: booking,
-        });
+        res.status(200).json({ status: 'success', data: booking });
     }
 
-    /**
-     * @swagger
-     * /api/bookings/{id}/confirm:
-     *   patch:
-     *     summary: Confirm a booking
-     *     tags: [Bookings]
-     */
     static async confirm(req: Request, res: Response): Promise<void> {
         const booking = await bookingRepository.findById(req.params.id);
         if (!booking) throw new NotFoundError('Booking');
@@ -98,20 +55,9 @@ export class BookingController {
             status: BookingStatus.CONFIRMED,
         });
 
-        res.status(200).json({
-            status: 'success',
-            message: 'Booking confirmed',
-            data: updated,
-        });
+        res.status(200).json({ status: 'success', data: updated });
     }
 
-    /**
-     * @swagger
-     * /api/bookings/{id}/cancel:
-     *   patch:
-     *     summary: Cancel a booking
-     *     tags: [Bookings]
-     */
     static async cancel(req: AuthenticatedRequest, res: Response): Promise<void> {
         const booking = await bookingRepository.findById(req.params.id);
         if (!booking) throw new NotFoundError('Booking');
@@ -121,20 +67,9 @@ export class BookingController {
             cancelReason: req.body.cancelReason || 'Cancelled by user',
         });
 
-        res.status(200).json({
-            status: 'success',
-            message: 'Booking cancelled',
-            data: updated,
-        });
+        res.status(200).json({ status: 'success', data: updated });
     }
 
-    /**
-     * @swagger
-     * /api/bookings/stats:
-     *   get:
-     *     summary: Get booking statistics
-     *     tags: [Bookings]
-     */
     static async stats(req: Request, res: Response): Promise<void> {
         const { businessId, dateFrom, dateTo } = req.query;
         const stats = await bookingRepository.getStats(
@@ -143,9 +78,6 @@ export class BookingController {
             dateTo ? new Date(dateTo as string) : new Date(),
         );
 
-        res.status(200).json({
-            status: 'success',
-            data: stats,
-        });
+        res.status(200).json({ status: 'success', data: stats });
     }
 }

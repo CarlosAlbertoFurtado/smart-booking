@@ -1,7 +1,3 @@
-// ===========================================
-// Routes: Auth
-// ===========================================
-
 import { Router } from 'express';
 import { AuthController } from '../controllers/AuthController';
 import { authenticate } from '../middlewares/auth';

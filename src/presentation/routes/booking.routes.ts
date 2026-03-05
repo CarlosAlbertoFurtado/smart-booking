@@ -1,7 +1,3 @@
-// ===========================================
-// Routes: Bookings
-// ===========================================
-
 import { Router } from 'express';
 import { BookingController } from '../controllers/BookingController';
 import { authenticate, authorize } from '../middlewares/auth';
@@ -9,7 +5,6 @@ import { UserRole } from '../../domain/entities/User';
 
 const router = Router();
 
-// All booking routes require authentication
 router.use(authenticate);
 
 router.post('/', BookingController.create);

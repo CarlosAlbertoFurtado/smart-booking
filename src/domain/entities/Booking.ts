@@ -1,8 +1,3 @@
-// ===========================================
-// Domain Entity: Booking
-// Core business logic for appointment scheduling
-// ===========================================
-
 export enum BookingStatus {
     PENDING = 'PENDING',
     CONFIRMED = 'CONFIRMED',
@@ -18,11 +13,11 @@ export interface BookingProps {
     serviceId: string;
     businessId: string;
     date: Date;
-    startTime: string;
+    startTime: string; // HH:MM
     endTime: string;
     status: BookingStatus;
-    notes?: string | null;
-    cancelReason?: string | null;
+    notes?: string;
+    cancelReason?: string;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -37,14 +32,14 @@ export class Booking {
     readonly startTime: string;
     readonly endTime: string;
     readonly status: BookingStatus;
-    readonly notes?: string | null;
-    readonly cancelReason?: string | null;
+    readonly notes?: string;
+    readonly cancelReason?: string;
     readonly createdAt?: Date;
     readonly updatedAt?: Date;
 
     constructor(props: BookingProps) {
         this.validate(props);
-        this.id = props.id;
+        Object.assign(this, props);
         this.clientId = props.clientId;
         this.professionalId = props.professionalId;
         this.serviceId = props.serviceId;
@@ -53,24 +48,15 @@ export class Booking {
         this.startTime = props.startTime;
         this.endTime = props.endTime;
         this.status = props.status;
-        this.notes = props.notes;
-        this.cancelReason = props.cancelReason;
-        this.createdAt = props.createdAt;
-        this.updatedAt = props.updatedAt;
     }
 
     private validate(props: BookingProps): void {
-        if (!props.clientId) throw new Error('Client ID is required');
-        if (!props.professionalId) throw new Error('Professional ID is required');
-        if (!props.serviceId) throw new Error('Service ID is required');
-        if (!props.businessId) throw new Error('Business ID is required');
-        if (!props.date) throw new Error('Date is required');
+        const timeFormat = /^([01]\d|2[0-3]):([0-5]\d)$/;
 
-        const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
-        if (!timeRegex.test(props.startTime)) {
+        if (!timeFormat.test(props.startTime)) {
             throw new Error('Invalid start time format (expected HH:MM)');
         }
-        if (!timeRegex.test(props.endTime)) {
+        if (!timeFormat.test(props.endTime)) {
             throw new Error('Invalid end time format (expected HH:MM)');
         }
         if (props.startTime >= props.endTime) {
@@ -78,12 +64,14 @@ export class Booking {
         }
     }
 
-    isPending(): boolean {
-        return this.status === BookingStatus.PENDING;
+    getDurationInMinutes(): number {
+        const [startH, startM] = this.startTime.split(':').map(Number);
+        const [endH, endM] = this.endTime.split(':').map(Number);
+        return (endH * 60 + endM) - (startH * 60 + startM);
     }
 
-    isConfirmed(): boolean {
-        return this.status === BookingStatus.CONFIRMED;
+    conflictsWith(otherStart: string, otherEnd: string): boolean {
+        return this.startTime < otherEnd && this.endTime > otherStart;
     }
 
     canBeCancelled(): boolean {
@@ -94,20 +82,15 @@ export class Booking {
         return this.status === BookingStatus.CONFIRMED;
     }
 
-    isInThePast(): boolean {
+    isPast(): boolean {
         return this.date < new Date();
     }
 
-    getDurationInMinutes(): number {
-        const [startH, startM] = this.startTime.split(':').map(Number);
-        const [endH, endM] = this.endTime.split(':').map(Number);
-        return (endH * 60 + endM) - (startH * 60 + startM);
+    isPending(): boolean {
+        return this.status === BookingStatus.PENDING;
     }
 
-    /**
-     * Check if this booking conflicts with another time slot
-     */
-    conflictsWith(otherStart: string, otherEnd: string): boolean {
-        return this.startTime < otherEnd && this.endTime > otherStart;
+    isConfirmed(): boolean {
+        return this.status === BookingStatus.CONFIRMED;
     }
 }
