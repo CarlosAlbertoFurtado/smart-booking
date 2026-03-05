@@ -1,36 +1,30 @@
 FROM node:20-alpine AS base
 WORKDIR /app
 
-# Install dependencies
+# Install dependencies only
 FROM base AS deps
 COPY package*.json ./
-RUN npm ci --only=production && cp -R node_modules /tmp/prod_node_modules
+COPY prisma ./prisma/
 RUN npm ci
-
-# Build
-FROM base AS build
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
 RUN npx prisma generate
-RUN npm run build
 
-# Production
+# Production image
 FROM base AS production
 ENV NODE_ENV=production
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 smartbooking
 
-COPY --from=build --chown=smartbooking:nodejs /app/dist ./dist
-COPY --from=build --chown=smartbooking:nodejs /app/prisma ./prisma
-COPY --from=deps --chown=smartbooking:nodejs /tmp/prod_node_modules ./node_modules
-COPY --chown=smartbooking:nodejs package*.json ./
+COPY --from=deps --chown=smartbooking:nodejs /app/node_modules ./node_modules
+COPY --chown=smartbooking:nodejs . .
+
+RUN npx prisma generate
 
 USER smartbooking
 
 EXPOSE 3000
 
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
 
-CMD ["node", "dist/shared/server.js"]
+CMD ["npx", "tsx", "src/shared/server.ts"]
