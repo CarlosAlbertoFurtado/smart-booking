@@ -64,7 +64,7 @@ jobs:
           JWT_REFRESH_SECRET: test-refresh-secret
           NODE_ENV: test
 
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v5
         if: always()
         with:
           file: ./coverage/lcov.info
