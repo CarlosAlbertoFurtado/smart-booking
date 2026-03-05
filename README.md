@@ -1,5 +1,9 @@
 # SmartBooking API
 
+![CI](https://github.com/CarlosAlbertoFurtado/smart-booking/actions/workflows/ci.yml/badge.svg)
+![Node](https://img.shields.io/badge/node-20-green)
+![License](https://img.shields.io/badge/license-MIT-green)
+
 Booking management REST API for small businesses — barber shops, clinics, salons, etc.
 
 Built with **TypeScript**, **Express**, **Prisma**, **PostgreSQL**, **Redis**, and **Socket.IO**.
