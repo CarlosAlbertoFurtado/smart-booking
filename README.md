@@ -113,12 +113,11 @@ The API emits events when bookings are created/updated (TODO: wire up emitters i
 
 ## Known limitations / TODO
 
-- [ ] Business CRUD endpoints not yet exposed (entity + repo ready)
-- [ ] Service CRUD endpoints not yet exposed
-- [ ] WebSocket emitters not wired to booking create/update yet
+- [ ] Business CRUD endpoints ([#1](https://github.com/CarlosAlbertoFurtado/smart-booking/issues/1))
+- [ ] Service CRUD endpoints
+- [ ] WebSocket emitters ([#2](https://github.com/CarlosAlbertoFurtado/smart-booking/issues/2))
 - [ ] OAuth (Google) login — interface defined, not implemented
 - [ ] Email notifications — interface defined, not implemented
-- [ ] AI scheduling suggestions — interface defined, not implemented
 
 ## License
 
