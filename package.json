@@ -33,7 +33,7 @@
   "author": "Carlos Alberto Furtado",
   "license": "MIT",
   "dependencies": {
-    "@prisma/client": "^5.22.0",
+    "@prisma/client": "^7.4.2",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",
